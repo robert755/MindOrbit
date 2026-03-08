@@ -28,7 +28,7 @@ public class WeeklyReportService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        LocalDate endDate = weekStart.plusDays(6);
+        LocalDate endDate = weekStart.plusDays(7);
 
         List<CheckIn> checkIns = checkInRepository.findByUserAndDateBetween(user, weekStart, endDate);
 
