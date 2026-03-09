@@ -30,6 +30,7 @@ LLMs & Tools:
 This project leveraged AI to accelerate the build process, specifically in scaffolding the Spring Boot architecture and refining the AI prompts for structured JSON output.
 
 Technical Hurdle: The "Date Boundary" Logic
+
 A specific challenge occurred when querying check-ins for the current week (e.g., March 2nd to March 8th). Even though a record existed for March 8th, the SQL BETWEEN query returned an empty list, triggering a 500 error.
 The Cause: The MySQL LocalDateTime column treated the end date (March 8) as 00:00:00. Any entry created later in the day (e.g., 10:30 AM) was outside the upper boundary.
 
