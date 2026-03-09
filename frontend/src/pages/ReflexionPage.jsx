@@ -41,16 +41,31 @@ function prettyDate(dateString) {
     year: "numeric",
   });
 }
-
 const moodColors = {
+  Excited: "#FFD166",
   Happy: "#F4D06F",
-  Stressed: "#B9855B",
+  Grateful: "#E7C76B",
+  Calm: "#A8C3B8",
   Neutral: "#C9A86A",
+  Tired: "#94A3A8",
+  Stressed: "#B9855B",
+  Overwhelmed: "#7E6A8A",
+  Anxious: "#6F88A3",
   Sad: "#4D6A87",
-  Anxious: "#7D93A6",
 };
 
-const moods = ["Happy", "Stressed", "Neutral", "Sad", "Anxious"];
+const moods = [
+  "Excited",
+  "Happy",
+  "Grateful",
+  "Calm",
+  "Neutral",
+  "Tired",
+  "Stressed",
+  "Overwhelmed",
+  "Anxious",
+  "Sad",
+];
 
 export default function ReflectionJournalPage() {
   const [currentWeekDate, setCurrentWeekDate] = useState(new Date());
@@ -222,6 +237,7 @@ export default function ReflectionJournalPage() {
     }
   };
 
+  // ACEASTA METODA FACE POST
   const handleCreateWeeklyReport = async () => {
     if (!userId) {
       setReportError("User not found. Please log in again.");
@@ -232,29 +248,24 @@ export default function ReflectionJournalPage() {
       setReportLoading(true);
       setReportError("");
 
-      await axios.post("http://localhost:8081/api/weeklyreports", {
-        userId,
-        weekStart: startDate,
-        weekEnd: endDate,
+      await axios.post("http://localhost:8081/api/reports/weekly", null, {
+        params: {
+          userId,
+          weekStart: startDate,
+        },
       });
 
-      setMessage("Weekly report created successfully.");
+      setMessage("Analysis finished! Click SEE MY RITUAL.");
       await fetchWeeklyReport();
     } catch (error) {
       console.error("Create weekly report error:", error);
-
-      if (typeof error.response?.data === "string") {
-        setReportError(error.response.data);
-      } else if (error.response?.data?.message) {
-        setReportError(error.response.data.message);
-      } else {
-        setReportError("Could not create weekly report.");
-      }
+      setReportError(error.response?.data?.message || "Could not analyze week.");
     } finally {
       setReportLoading(false);
     }
   };
 
+  // ACEASTA METODA FACE GET
   const handleGenerateReport = async () => {
     if (!userId) {
       setReportError("User not found. Please log in again.");
@@ -280,14 +291,7 @@ export default function ReflectionJournalPage() {
       setHasWeeklyReport(true);
     } catch (error) {
       console.error("Generate report error:", error);
-
-      if (typeof error.response?.data === "string") {
-        setReportError(error.response.data);
-      } else if (error.response?.data?.message) {
-        setReportError(error.response.data.message);
-      } else {
-        setReportError("Could not load your ritual report.");
-      }
+      setReportError("Report not found. Please analyze your week first.");
     } finally {
       setReportLoading(false);
     }
@@ -616,15 +620,19 @@ export default function ReflectionJournalPage() {
       </div>
 
       <div className="fixed bottom-6 right-6 flex gap-3">
-        <button
-          type="button"
-          onClick={handleCreateWeeklyReport}
-          disabled={reportLoading || hasWeeklyReport}
-          className="rounded-full border border-[#d7ddd7] bg-white px-6 py-4 text-sm font-semibold tracking-[0.12em] text-[#2f3b33] shadow-[0_18px_40px_rgba(47,59,51,0.12)] transition hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          LET'S SEE WHAT CAN BE IMPROVED
-        </button>
+        {/* Butonul 1: POST - Apare doar dacă nu există raport */}
+        {!hasWeeklyReport && (
+          <button
+            type="button"
+            onClick={handleCreateWeeklyReport}
+            disabled={reportLoading}
+            className="rounded-full border border-[#d7ddd7] bg-white px-6 py-4 text-sm font-semibold tracking-[0.12em] text-[#2f3b33] shadow-[0_18px_40px_rgba(47,59,51,0.12)] transition hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {reportLoading ? "ANALYZING..." : "LET'S SEE WHAT YOU CAN DO BETTER"}
+          </button>
+        )}
 
+        {/* Butonul 2: GET - Rămâne mereu pentru vizualizare */}
         <button
           type="button"
           onClick={handleGenerateReport}

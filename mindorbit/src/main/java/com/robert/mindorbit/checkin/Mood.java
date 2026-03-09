@@ -5,5 +5,10 @@ public enum Mood {
     Stressed,
     Neutral,
     Sad,
-    Anxious
+    Anxious,
+    Calm,
+    Excited,
+    Tired,
+    Grateful,
+    Overwhelmed
 }

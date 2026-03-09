@@ -14,7 +14,6 @@ export default function DashboardPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Funcția de Logout
   const handleLogout = () => {
     localStorage.removeItem("userId");
     localStorage.removeItem("username");
@@ -26,10 +25,8 @@ export default function DashboardPage() {
       className="min-h-screen bg-cover bg-center bg-no-repeat flex flex-col relative"
       style={{ backgroundImage: `url(${background})` }}
     >
-      {/* Container principal centrat */}
       <div className="min-h-screen flex flex-col justify-center px-8 md:px-14 lg:px-20 py-10 gap-16 md:gap-24">
         
-        {/* TEXT */}
         <div
           className={`max-w-4xl mx-auto transition-all duration-1000 ease-out ${
             showContent
@@ -53,7 +50,7 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* CARDURI */}
+       
         <div
           className={`transition-all duration-1000 ease-out delay-200 ${
             showContent
@@ -62,7 +59,7 @@ export default function DashboardPage() {
           }`}
         >
           <div className="flex flex-col md:flex-row justify-center gap-8 max-w-6xl mx-auto">
-            {/* Card 1 */}
+           
             <div className="rounded-[28px] border border-white/30 bg-white/35 backdrop-blur-md p-10 md:p-12 shadow-[0_20px_50px_rgba(70,70,70,0.08)] text-center min-h-[300px] flex flex-col justify-between w-full md:w-80 lg:w-96">
               <div>
                 <h2 className="text-3xl font-semibold text-[#2f3b33] mb-5">
@@ -80,7 +77,7 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            {/* Card 2 */}
+            
             <div className="rounded-[28px] border border-white/30 bg-white/35 backdrop-blur-md p-10 md:p-12 shadow-[0_20px_50px_rgba(70,70,70,0.08)] text-center min-h-[300px] flex flex-col justify-between w-full md:w-80 lg:w-96">
               <div>
                 <h2 className="text-3xl font-semibold text-[#2f3b33] mb-5">
@@ -101,7 +98,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* BUTON LOGOUT - Dreapta Jos */}
+      
       <button
         onClick={handleLogout}
         className="fixed bottom-8 right-8 px-6 py-3 rounded-2xl border border-white/20 bg-white/20 backdrop-blur-lg text-[#2f3b33] font-medium shadow-lg transition-all hover:bg-red-500 hover:text-white hover:border-red-500 active:scale-95"

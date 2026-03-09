@@ -3,34 +3,64 @@ import axios from "axios";
 
 const moods = [
   {
+    name: "Excited",
+    color: "#FFD166",
+    glow: "0 0 60px rgba(255, 209, 102, 0.45)",
+    description: "Energetic, inspired and full of momentum.",
+  },
+  {
     name: "Happy",
     color: "#F4D06F",
     glow: "0 0 60px rgba(244, 208, 111, 0.45)",
     description: "Light, warm and open.",
   },
   {
+    name: "Grateful",
+    color: "#E7C76B",
+    glow: "0 0 60px rgba(231, 199, 107, 0.40)",
+    description: "Appreciative, fulfilled and grounded.",
+  },
+  {
+    name: "Calm",
+    color: "#A8C3B8",
+    glow: "0 0 60px rgba(168, 195, 184, 0.35)",
+    description: "Peaceful, steady and at ease.",
+  },
+  {
+    name: "Neutral",
+    color: "#bab3a6",
+    glow: "0 0 60px rgba(194, 185, 170, 0.35)",
+    description: "Balanced, steady and present.",
+  },
+  {
+    name: "Tired",
+    color: "#94A3A8",
+    glow: "0 0 60px rgba(148, 163, 168, 0.30)",
+    description: "Low energy, slow and drained.",
+  },
+  {
     name: "Stressed",
-    color: "#B9855B",
+    color: "#8a7767",
     glow: "0 0 60px rgba(185, 133, 91, 0.35)",
     description: "Tense, pressured and unsettled.",
   },
   {
-    name: "Neutral",
-    color: "#C9A86A",
-    glow: "0 0 60px rgba(201, 168, 106, 0.35)",
-    description: "Balanced, steady and present.",
+    name: "Overwhelmed",
+    color: "#7E6A8A",
+    glow: "0 0 60px rgba(126, 106, 138, 0.35)",
+    description: "Heavy, overloaded and emotionally crowded.",
+  },
+  {
+    name: "Anxious",
+    color: "#6F88A3",
+    glow: "0 0 60px rgba(111, 136, 163, 0.35)",
+    description: "Restless, uncertain and uneasy.",
   },
   {
     name: "Sad",
     color: "#4D6A87",
     glow: "0 0 60px rgba(77, 106, 135, 0.35)",
     description: "Heavy, quiet and low.",
-  },
-  {
-    name: "Anxious",
-    color: "#7D93A6",
-    glow: "0 0 60px rgba(125, 147, 166, 0.35)",
-    description: "Restless, uncertain and overwhelmed.",
   },
 ];
 

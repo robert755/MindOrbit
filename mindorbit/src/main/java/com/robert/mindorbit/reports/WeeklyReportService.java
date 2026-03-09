@@ -48,6 +48,6 @@ public class WeeklyReportService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return weeklyReportRepository.findByUserAndWeekStart(user, weekStart)
-                .orElseThrow(() -> new RuntimeException("Weekly report not found"));
+                .orElse(null);
     }
 }
