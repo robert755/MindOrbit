@@ -10,6 +10,7 @@ AI Insights (Gemini API): Processes weekly data to generate:
 * Identification of Emotional Patterns.
 * Practical Suggestions for wellbeing improvement.
 * Music Recommendations based on the week's vibe.
+  
 Polished UI/UX: A clean, modern interface built with React, focusing on a calm user experience using glassmorphism and a soft color palette.
 
 # Tech Stack
