@@ -620,7 +620,7 @@ export default function ReflectionJournalPage() {
       </div>
 
       <div className="fixed bottom-6 right-6 flex gap-3">
-        {/* Butonul 1: POST - Apare doar dacă nu există raport */}
+        
         {!hasWeeklyReport && (
           <button
             type="button"
@@ -632,7 +632,7 @@ export default function ReflectionJournalPage() {
           </button>
         )}
 
-        {/* Butonul 2: GET - Rămâne mereu pentru vizualizare */}
+        
         <button
           type="button"
           onClick={handleGenerateReport}

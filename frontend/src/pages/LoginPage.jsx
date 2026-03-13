@@ -14,7 +14,7 @@ export default function LoginPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setAnimate(true);
-    }, 1400); // Restaurat la 1.4 secunde pentru efectul de intro
+    }, 1400); 
 
     return () => clearTimeout(timer);
   }, []);
@@ -47,12 +47,12 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#f7f3ee]">
-      {/* Background decorativ */}
+      
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(214,225,214,0.55),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(234,220,204,0.6),_transparent_30%)]" />
 
       <div className="relative flex min-h-screen items-center justify-center px-6">
         
-        {/* TITLU - Restaurat la poziționare absolută pentru mișcarea originală */}
+        
         <div
           className={`absolute left-1/2 z-20 flex -translate-x-1/2 flex-col items-center text-center transition-all duration-1000 ease-in-out ${
             animate 
@@ -68,7 +68,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* CARD - Apare după ce titlul urcă */}
+        
         <div
           className={`w-full max-w-md rounded-[32px] border border-white/50 bg-white/70 shadow-[0_25px_70px_rgba(70,70,70,0.12)] backdrop-blur-xl transition-all duration-1000 ease-out ${
             animate
