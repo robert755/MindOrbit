@@ -16,11 +16,41 @@ public class CheckInService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private VoiceMoodAnalysisService voiceMoodAnalysisService;
+
     public CheckIn createCheckIn(CheckIn checkIn, Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         checkIn.setUser(user);
+        if (checkIn.getMoodSource() == null) {
+            checkIn.setMoodSource("MANUAL");
+        }
+        return checkInRepository.save(checkIn);
+    }
+
+    public CheckIn createVoiceCheckIn(byte[] audioData, String mimeType, Integer userId,
+                                       LocalDate date, String activity) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        VoiceMoodResult result = voiceMoodAnalysisService.analyzeVoice(audioData, mimeType);
+
+        CheckIn checkIn = new CheckIn();
+        checkIn.setUser(user);
+        checkIn.setMood(result.getDetectedMood());
+        checkIn.setEnergyLevel(result.getEstimatedEnergyLevel());
+        checkIn.setDate(date != null ? date : LocalDate.now());
+        if (activity != null && !activity.isBlank()) {
+            checkIn.setActivity(activity.trim());
+        }
+        checkIn.setNotes(result.getTranscription());
+        checkIn.setVoiceTranscription(result.getTranscription());
+        checkIn.setVoiceAnalysis(result.getVoiceAnalysis());
+        checkIn.setMoodSource("VOICE");
+        checkIn.setMoodConfidence(result.getConfidence());
+
         return checkInRepository.save(checkIn);
     }
 

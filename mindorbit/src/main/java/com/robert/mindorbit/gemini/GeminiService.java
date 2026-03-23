@@ -5,8 +5,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class GeminiService {
@@ -35,16 +34,50 @@ public class GeminiService {
                         )
                 )
         );
+
+        return callGeminiApi(url, requestBody);
+    }
+
+    /**
+     * Sends audio data along with a text prompt to Gemini for multimodal analysis.
+     * Gemini will analyze both the speech content and the vocal tone/emotion.
+     */
+    public String analyzeAudio(String prompt, byte[] audioData, String mimeType) {
+
+        String url = apiUrl + "/" + model + ":generateContent";
+
+        String base64Audio = Base64.getEncoder().encodeToString(audioData);
+
+        Map<String, Object> inlineData = new LinkedHashMap<>();
+        inlineData.put("mime_type", mimeType);
+        inlineData.put("data", base64Audio);
+
+        Map<String, Object> audioPart = Map.of("inline_data", inlineData);
+        Map<String, Object> textPart = Map.of("text", prompt);
+
+        Map<String, Object> requestBody = Map.of(
+                "contents", List.of(
+                        Map.of("parts", List.of(audioPart, textPart))
+                )
+        );
+
+        return callGeminiApi(url, requestBody);
+    }
+
+    private String callGeminiApi(String url, Map<String, Object> requestBody) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("x-goog-api-key", apiKey);
+
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
         ResponseEntity<Map> response = restTemplate.exchange(
                 url,
                 HttpMethod.POST,
                 entity,
                 Map.class
         );
+
         Map body = response.getBody();
         List candidates = (List) body.get("candidates");
         Map firstCandidate = (Map) candidates.get(0);

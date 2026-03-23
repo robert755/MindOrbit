@@ -25,6 +25,16 @@ public class CheckIn {
 
     private LocalDateTime createdAt;
 
+    @Column(columnDefinition = "TEXT")
+    private String voiceTranscription;
+
+    @Column(columnDefinition = "TEXT")
+    private String voiceAnalysis;
+
+    private String moodSource;
+
+    private Double moodConfidence;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -94,5 +104,37 @@ public class CheckIn {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public String getVoiceTranscription() {
+        return voiceTranscription;
+    }
+
+    public void setVoiceTranscription(String voiceTranscription) {
+        this.voiceTranscription = voiceTranscription;
+    }
+
+    public String getVoiceAnalysis() {
+        return voiceAnalysis;
+    }
+
+    public void setVoiceAnalysis(String voiceAnalysis) {
+        this.voiceAnalysis = voiceAnalysis;
+    }
+
+    public String getMoodSource() {
+        return moodSource;
+    }
+
+    public void setMoodSource(String moodSource) {
+        this.moodSource = moodSource;
+    }
+
+    public Double getMoodConfidence() {
+        return moodConfidence;
+    }
+
+    public void setMoodConfidence(Double moodConfidence) {
+        this.moodConfidence = moodConfidence;
     }
 }
