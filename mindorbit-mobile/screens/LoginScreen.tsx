@@ -1,17 +1,7 @@
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { API_BASE_URL } from '@/lib/api';
@@ -58,85 +48,79 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#f7f3ee]">
-      <View className="absolute -left-12 -top-28 h-[360px] w-[360px] rounded-full bg-[#d6e1d6]/60" />
-      <View className="absolute -bottom-24 -right-16 h-[320px] w-[320px] rounded-full bg-[#eadccc]/70" />
+    <SafeAreaView className="relative flex-1 overflow-hidden bg-[#f7f3ee]">
+      <View className="absolute inset-0 bg-[#f7f3ee]" />
+      <View className="absolute -left-28 -top-36 h-[420px] w-[420px] rounded-full bg-[#d6e1d6]/55" />
+      <View className="absolute -bottom-24 -right-16 h-[320px] w-[320px] rounded-full bg-[#eadccc]/60" />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="flex-1">
-        <ScrollView
-          contentContainerClassName="min-h-full justify-center px-6 py-8"
-          keyboardShouldPersistTaps="handled">
-          <Animated.View entering={FadeInUp.duration(800)} className="mb-6 items-center">
-            <Text className={`font-semibold text-[#2f3b33] ${animate ? 'text-4xl tracking-[6px]' : 'text-5xl tracking-[8px]'}`}>
-              MindOrbit
-            </Text>
-            <Text className="mt-2 max-w-[330px] text-center text-[11px] tracking-[2px] text-[#6e786f]">
-              YOUR DAILY RITUAL FOR CLARITY, BALANCE AND SELF-REFLECTION
-            </Text>
-          </Animated.View>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="relative flex-1 items-center justify-center px-6">
+        <View
+          className={`absolute left-1/2 z-20 items-center -translate-x-1/2 ${
+            animate ? 'top-10 scale-75 opacity-95' : 'top-1/2 -translate-y-1/2 scale-100 opacity-100'
+          }`}>
+          <Text className="text-6xl font-semibold tracking-[0.25em] text-[#2f3b33]">MindOrbit</Text>
+          <Text className="mt-4 max-w-xl text-center text-[11px] uppercase tracking-[0.15em] text-[#6e786f]">
+            your daily ritual for clarity, balance and self-reflection
+          </Text>
+        </View>
 
-          <Animated.View
-            entering={FadeInDown.delay(150).duration(850)}
-            className="mx-auto w-full max-w-[430px] rounded-[32px] border border-white/50 bg-white/70 px-6 py-7 shadow">
-            <View className="mb-6 items-center">
-              <Text className="text-3xl font-semibold text-[#2f3b33]">Welcome back</Text>
-              <Text className="mt-1 text-center text-[15px] text-[#7d867f]">
-                Enter your account and continue your journey.
-              </Text>
+        <View
+          className={`w-full max-w-md rounded-[32px] border border-white/50 bg-white/70 px-10 py-12 shadow-lg ${
+            animate ? 'translate-y-20 opacity-100' : 'pointer-events-none translate-y-32 opacity-0'
+          }`}>
+          <View className="mb-10 items-center">
+            <Text className="text-3xl font-semibold text-[#2f3b33]">Welcome back</Text>
+            <Text className="mt-3 text-base text-[#7d867f]">
+              Enter your account and continue your journey.
+            </Text>
+          </View>
+
+          <View className="gap-5">
+            <View>
+              <Text className="mb-2 text-sm text-[#556157]">Username</Text>
+              <TextInput
+                placeholder="Enter your username"
+                placeholderTextColor="#9aa39d"
+                value={username}
+                onChangeText={setUsername}
+                autoCapitalize="none"
+                className="w-full rounded-xl border border-[#dde4dc] bg-[#fcfbf8]/50 px-5 py-4 text-base text-[#2f3b33]"
+              />
             </View>
 
-            <View className="gap-3">
-              <View>
-                <Text className="mb-2 text-[13px] text-[#556157]">Username</Text>
-                <TextInput
-                  placeholder="Enter your username"
-                  placeholderTextColor="#9aa39d"
-                  value={username}
-                  onChangeText={setUsername}
-                  autoCapitalize="none"
-                  className="w-full rounded-xl border border-[#dde4dc] bg-[#fcfbf8]/80 px-4 py-3 text-[#2f3b33]"
-                />
-              </View>
-
-              <View>
-                <Text className="mb-2 text-[13px] text-[#556157]">Password</Text>
-                <TextInput
-                  placeholder="Enter your password"
-                  placeholderTextColor="#9aa39d"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  className="w-full rounded-xl border border-[#dde4dc] bg-[#fcfbf8]/80 px-4 py-3 text-[#2f3b33]"
-                />
-              </View>
-
-              {!!errorMessage && <Text className="text-[13px] font-medium text-red-500">{errorMessage}</Text>}
-
-              <Pressable
-                className="mt-1 w-full items-center justify-center rounded-xl bg-[#2f3b33] py-3"
-                disabled={isLoading}
-                onPress={handleSubmit}>
-                {isLoading ? (
-                  <ActivityIndicator color="#ffffff" />
-                ) : (
-                  <Text className="text-[13px] font-bold tracking-[1.2px] text-white">SIGN IN</Text>
-                )}
-              </Pressable>
-
-              <View className="mt-2 border-t border-[#f0f0f0] pt-3" />
-              <Text className="text-center text-sm text-[#7d867f]">
-                Hey, create an account{' '}
-                <Text
-                  className="font-semibold text-[#2f3b33] underline"
-                  onPress={() => router.push('/register' as any)}>
-                  here
-                </Text>
-              </Text>
+            <View>
+              <Text className="mb-2 text-sm text-[#556157]">Password</Text>
+              <TextInput
+                placeholder="Enter your password"
+                placeholderTextColor="#9aa39d"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                className="w-full rounded-xl border border-[#dde4dc] bg-[#fcfbf8]/50 px-5 py-4 text-base text-[#2f3b33]"
+              />
             </View>
-          </Animated.View>
-        </ScrollView>
+
+            {!!errorMessage && <Text className="text-sm font-medium text-red-500">{errorMessage}</Text>}
+
+            <Pressable
+              className={`w-full rounded-xl bg-[#2f3b33] py-4 ${isLoading ? 'opacity-70' : ''}`}
+              disabled={isLoading}
+              onPress={handleSubmit}>
+              <Text className="text-center text-sm font-bold tracking-[0.15em] text-white">
+                {isLoading ? 'SIGNING IN...' : 'SIGN IN'}
+              </Text>
+            </Pressable>
+          </View>
+
+          <View className="mt-8 border-t border-gray-100 pt-6">
+            <Text className="text-center text-sm text-[#7d867f]">
+              Hey, create an account{' '}
+              <Text className="font-semibold text-[#2f3b33] underline" onPress={() => router.push('/register' as any)}>
+                here
+              </Text>
+            </Text>
+          </View>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
