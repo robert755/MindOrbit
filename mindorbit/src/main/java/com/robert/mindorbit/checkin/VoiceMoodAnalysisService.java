@@ -6,6 +6,8 @@ import com.robert.mindorbit.gemini.GeminiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Locale;
+
 @Service
 public class VoiceMoodAnalysisService {
 
@@ -60,16 +62,51 @@ public class VoiceMoodAnalysisService {
             JsonNode root = objectMapper.readTree(cleaned);
 
             VoiceMoodResult result = new VoiceMoodResult();
-            result.setDetectedMood(Mood.valueOf(root.get("detectedMood").asText()));
-            result.setTranscription(root.get("transcription").asText());
-            result.setVoiceAnalysis(root.get("voiceAnalysis").asText());
-            result.setConfidence(root.get("confidence").asDouble());
-            result.setEstimatedEnergyLevel(root.get("estimatedEnergyLevel").asInt());
+            result.setDetectedMood(parseMood(root.get("detectedMood")));
+            result.setTranscription(requireText(root, "transcription"));
+            result.setVoiceAnalysis(requireText(root, "voiceAnalysis"));
+            result.setConfidence(root.path("confidence").asDouble(0.5));
+            JsonNode energyNode = root.get("estimatedEnergyLevel");
+            int energy = energyNode == null || energyNode.isNull()
+                    ? 5
+                    : (int) Math.round(energyNode.asDouble());
+            energy = Math.max(1, Math.min(10, energy));
+            result.setEstimatedEnergyLevel(energy);
 
             return result;
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to analyze voice mood: " + e.getMessage(), e);
+        }
+    }
+
+    private static String requireText(JsonNode root, String field) {
+        JsonNode n = root.get(field);
+        if (n == null || n.isNull() || n.asText().isBlank()) {
+            return "";
+        }
+        return n.asText();
+    }
+
+    /** Gemini often returns mood names with different casing; {@link Mood#valueOf} is strict. */
+    private static Mood parseMood(JsonNode node) {
+        if (node == null || node.isNull()) {
+            throw new IllegalArgumentException("detectedMood is missing");
+        }
+        String raw = node.asText().trim();
+        if (raw.isEmpty()) {
+            throw new IllegalArgumentException("detectedMood is empty");
+        }
+        for (Mood m : Mood.values()) {
+            if (m.name().equalsIgnoreCase(raw)) {
+                return m;
+            }
+        }
+        String normalized = raw.substring(0, 1).toUpperCase(Locale.ROOT) + raw.substring(1).toLowerCase(Locale.ROOT);
+        try {
+            return Mood.valueOf(normalized);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid detectedMood: " + raw);
         }
     }
 }

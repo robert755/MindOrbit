@@ -13,8 +13,54 @@ import java.util.List;
 @RequestMapping("/checkins")
 public class CheckInController {
     private static final Set<String> SUPPORTED_AUDIO_TYPES = Set.of(
-            "audio/webm", "audio/mp4", "audio/mpeg", "audio/wav", "audio/x-wav", "audio/m4a", "audio/aac"
+            "audio/webm",
+            "audio/mp4",
+            "audio/mpeg",
+            "audio/wav",
+            "audio/x-wav",
+            "audio/m4a",
+            "audio/aac"
     );
+
+    /**
+     * React Native multipart uploads often send {@code application/octet-stream} even for .m4a;
+     * Spring then rejects the part. Map by filename / common mobile types before validation.
+     */
+    private static String resolveAudioMimeType(String contentType, String originalFilename) {
+        String raw = contentType == null ? "" : contentType.trim();
+        String lower = raw.toLowerCase();
+        if ("audio/x-m4a".equals(lower)) {
+            return "audio/mp4";
+        }
+        if (!lower.isEmpty() && SUPPORTED_AUDIO_TYPES.contains(lower)) {
+            return lower;
+        }
+        String name = originalFilename == null ? "" : originalFilename.toLowerCase();
+        if (lower.equals("application/octet-stream")
+                || lower.equals("binary/octet-stream")
+                || lower.isEmpty()) {
+            if (name.endsWith(".m4a") || name.endsWith(".mp4") || name.endsWith(".caf")) {
+                return "audio/mp4";
+            }
+            if (name.endsWith(".webm")) {
+                return "audio/webm";
+            }
+            if (name.endsWith(".wav")) {
+                return "audio/wav";
+            }
+            if (name.endsWith(".aac")) {
+                return "audio/aac";
+            }
+            if (name.endsWith(".mp3")) {
+                return "audio/mpeg";
+            }
+            if (lower.isEmpty()) {
+                return "audio/webm";
+            }
+            return "audio/mp4";
+        }
+        return lower;
+    }
 
     @Autowired
     private CheckInService checkInService;
@@ -40,12 +86,9 @@ public class CheckInController {
             }
 
             byte[] audioData = audioFile.getBytes();
-            String mimeType = audioFile.getContentType();
-            if (mimeType == null || mimeType.isBlank()) {
-                mimeType = "audio/webm";
-            }
+            String mimeType = resolveAudioMimeType(audioFile.getContentType(), audioFile.getOriginalFilename());
 
-            if (!SUPPORTED_AUDIO_TYPES.contains(mimeType.toLowerCase())) {
+            if (!SUPPORTED_AUDIO_TYPES.contains(mimeType)) {
                 throw new ResponseStatusException(
                         HttpStatus.UNSUPPORTED_MEDIA_TYPE,
                         "Unsupported audio format. Use webm/mp4/mpeg/wav/m4a/aac."
@@ -56,9 +99,19 @@ public class CheckInController {
         } catch (ResponseStatusException e) {
             throw e;
         } catch (Exception e) {
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            String detail = cause.getMessage();
+            if (detail == null || detail.isBlank()) {
+                detail = e.getMessage();
+            }
+            if (detail != null && detail.length() > 600) {
+                detail = detail.substring(0, 600) + "…";
+            }
             throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Failed to process voice check-in.",
+                    HttpStatus.BAD_GATEWAY,
+                    detail != null && !detail.isBlank()
+                            ? detail
+                            : "Failed to process voice check-in.",
                     e
             );
         }

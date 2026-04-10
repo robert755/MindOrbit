@@ -3,6 +3,9 @@ package com.robert.mindorbit.gemini;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -65,26 +68,75 @@ public class GeminiService {
     }
 
     private String callGeminiApi(String url, Map<String, Object> requestBody) {
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException(
+                    "Gemini API key is missing. Set GEMINI_API_KEY or gemini.api.key in application.properties.");
+        }
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("x-goog-api-key", apiKey);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
-        ResponseEntity<Map> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                entity,
-                Map.class
-        );
+        Map<String, Object> body;
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    Map.class
+            );
+            body = response.getBody();
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            throw new IllegalStateException("Gemini API HTTP error: " + e.getStatusCode() + " — " + e.getResponseBodyAsString(), e);
+        } catch (RestClientException e) {
+            throw new IllegalStateException("Gemini API request failed: " + e.getMessage(), e);
+        }
 
-        Map body = response.getBody();
-        List candidates = (List) body.get("candidates");
-        Map firstCandidate = (Map) candidates.get(0);
-        Map content = (Map) firstCandidate.get("content");
-        List parts = (List) content.get("parts");
-        Map firstPart = (Map) parts.get(0);
+        if (body == null) {
+            throw new IllegalStateException("Gemini API returned an empty response body.");
+        }
 
-        return (String) firstPart.get("text");
+        if (body.containsKey("error")) {
+            Object err = body.get("error");
+            throw new IllegalStateException("Gemini API error: " + err);
+        }
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> candidates = (List<Map<String, Object>>) body.get("candidates");
+        if (candidates == null || candidates.isEmpty()) {
+            Object promptFeedback = body.get("promptFeedback");
+            throw new IllegalStateException(
+                    "Gemini returned no candidates (audio may be blocked or unsupported). promptFeedback=" + promptFeedback);
+        }
+
+        Map<String, Object> firstCandidate = candidates.get(0);
+        if (firstCandidate == null) {
+            throw new IllegalStateException("Gemini candidate list contained a null entry.");
+        }
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> content = (Map<String, Object>) firstCandidate.get("content");
+        if (content == null) {
+            throw new IllegalStateException("Gemini candidate has no content: " + firstCandidate);
+        }
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
+        if (parts == null || parts.isEmpty()) {
+            throw new IllegalStateException("Gemini content has no parts.");
+        }
+
+        Map<String, Object> firstPart = parts.get(0);
+        if (firstPart == null || !firstPart.containsKey("text")) {
+            throw new IllegalStateException("Gemini response part has no text: " + firstPart);
+        }
+
+        Object text = firstPart.get("text");
+        if (text == null) {
+            throw new IllegalStateException("Gemini returned null text.");
+        }
+        return text.toString();
     }
 }
