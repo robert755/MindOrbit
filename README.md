@@ -1,82 +1,107 @@
 # MindOrbit
 
-MindOrbit is a reflective journaling application designed to help users track their wellbeing, identify emotional patterns, and receive personalized insights through artificial intelligence.
+MindOrbit is a calm space for daily reflection.  
+You log how your day felt, track your energy and mood, and at the end of the week you get an AI-powered ritual: a short summary of patterns, suggestions, and gentle next steps.
 
-The application allows users to record their daily activities, energy levels, and moods. At the end of the week, it offers an AI-generated "Ritual"—a summary that analyzes the user's progress and provides actionable advice.
+The goal is simple: help you notice your emotional rhythm before burnout notices it for you.
 
-# Key Features
+## What You Can Do
 
-**Full Journaling (CRUD):** Users can create, view, edit, and delete daily check-ins.
+- **Daily check-ins (CRUD):** create, edit, delete, and review entries.
+- **Voice check-in:** record your voice and let AI analyze both what you said and how it sounded.
+- **Mood + energy tracking:** keep a consistent emotional history.
+- **Weekly journal view:** navigate by week and revisit patterns.
+- **AI weekly ritual:** generated summary, emotional trends, practical suggestions, and music recommendations.
 
-**Voice Check-In (AI tone analysis):** Users can describe how their day went by **recording their voice** from the Daily Check-In page. The backend sends the audio to **Google Gemini** (multimodal input). The model analyzes both **what is said** and **how it sounds** (pace, energy, tension, hesitations, etc.). The detected **mood is always one of the predefined values** in the backend `Mood` enum (`Happy`, `Stressed`, `Neutral`, `Sad`, `Anxious`, `Calm`, `Excited`, `Tired`, `Grateful`, `Overwhelmed`). This helps surface a more honest emotional signal when words alone might say “I’m fine.” Each voice check-in stores transcription, a short voice-tone explanation, confidence score, and `moodSource: VOICE` (manual entries use `MANUAL`).
+### Voice Check-In (How It Works)
 
-**API:** `POST /checkins/user/{userId}/voice` — `multipart/form-data` with `audio` (e.g. WebM), optional `date`, optional `activity`.
+From the Daily Check-In screen, you can record audio and send it to the backend:
 
-**Weekly Filtering:** Intuitive navigation between weeks to revisit history.
+- Endpoint: `POST /checkins/user/{userId}/voice`
+- Request type: `multipart/form-data`
+- Fields: `audio` (required), `date` (optional), `activity` (optional)
 
-**AI Insights (Gemini API):** Processes weekly data to generate:
+The backend uses Gemini to process audio + text and maps the detected mood to your backend `Mood` enum:
+`Happy`, `Stressed`, `Neutral`, `Sad`, `Anxious`, `Calm`, `Excited`, `Tired`, `Grateful`, `Overwhelmed`.
 
-- A concise Week Summary.
-- Identification of Emotional Patterns.
-- Practical Suggestions for wellbeing improvement.
-- Music Recommendations based on the week's vibe.
+Each voice entry can store:
+- transcription
+- voice-tone explanation
+- confidence score
+- `moodSource: VOICE` (manual entries use `MANUAL`)
 
-**Polished UI/UX:** A clean, modern interface built with React, focusing on a calm user experience using glassmorphism and a soft color palette.
+## Tech Stack
 
-# Tech Stack
+- **Web Frontend:** React, Tailwind CSS, Axios
+- **Mobile:** React Native (Expo), Expo Router, NativeWind
+- **Backend:** Java Spring Boot, Spring Data JPA, Hibernate
+- **Database:** MySQL
+- **AI:** Google Gemini API (weekly reports + voice analysis)
 
-**Frontend:** React.js, Tailwind CSS, Axios.
+## Setup
 
-**Backend:** Java Spring Boot, Spring Data JPA, Hibernate.
+### 1) Backend
 
-**Database:** MySQL.
+- Configure `mindorbit/src/main/resources/application.properties`:
+  - MySQL credentials
+  - Gemini API key (`gemini.api.key` or env variable)
+- Run Spring Boot on port `8081`.
 
-**AI Integration:** Google Gemini API (via `GeminiService`) — text for weekly reports; **audio + text** for voice check-ins.
+Recommended for mobile testing on the same network:
 
-**LLMs & Tools:**
+```properties
+server.port=8081
+server.address=0.0.0.0
+```
 
-- **Gemini 2.5 Flash** (configurable in `application.properties`): weekly analysis and voice-based mood detection.
-- **ChatGPT / Claude:** Used to accelerate boilerplate code generation and assist in debugging complex date-range logic.
+### 2) Web App
 
-# LLM-Assisted Development & Technical Hurdles
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-This project leveraged AI to accelerate the build process, specifically in scaffolding the Spring Boot architecture and refining the AI prompts for structured JSON output.
+### 3) Mobile App (Expo)
 
-**Technical Hurdle: The "Date Boundary" Logic**
+```bash
+cd mindorbit-mobile
+npm install
+```
 
-A specific challenge occurred when querying check-ins for the current week (e.g., March 2nd to March 8th). Even though a record existed for March 8th, the SQL BETWEEN query returned an empty list, triggering a 500 error.
+Create `mindorbit-mobile/.env`:
 
-**The Cause:** The MySQL `LocalDateTime` column treated the end date (March 8) as 00:00:00. Any entry created later in the day (e.g., 10:30 AM) was outside the upper boundary.
+```env
+EXPO_PUBLIC_API_BASE_URL=http://<YOUR_LAPTOP_IP>:8081
+```
 
-**Prompting Strategy:** I prompted the LLM to explain why specific dates were being skipped despite existing in the DB. The AI initially suggested a basic "inclusive" check, but through iterative prompting ("Explain how to handle inclusive date boundaries in JPA when the DB has time components"), we arrived at the solution: extending the `endDate` by one day or setting it to 23:59:59 to ensure no reflections were lost.
+Example:
 
-# Installation & Setup
+```env
+EXPO_PUBLIC_API_BASE_URL=http://192.168.0.100:8081
+```
 
-**Backend:**
+Start Expo:
 
-- Configure `mindorbit/src/main/resources/application.properties` with your MySQL credentials and Gemini API key (e.g. environment variable `gemini.api.key`).
-- Run the Spring Boot application (default port **8081**).
+```bash
+npx expo start --clear
+```
 
-**Frontend:**
+## Mobile Networking Notes (Important)
 
-- Navigate to the `frontend` folder.
-- Run `npm install` and `npm run dev`.
+- `localhost` works on your laptop, but **not** on a physical phone.
+- Use your laptop's local IP in `.env`.
+- Phone and laptop must be on the same Wi-Fi.
+- Allow inbound port `8081` in Windows Firewall.
+- Ensure backend CORS is configured for your dev origins.
 
-**Mobile (Expo / React Native):**
+## Development Notes
 
-- Navigate to the `mindorbit-mobile` folder.
-- Run `npm install`.
-- Create/update `mindorbit-mobile/.env`:
-  - `EXPO_PUBLIC_API_BASE_URL=http://<YOUR_LAPTOP_IP>:8081`
-  - Example: `EXPO_PUBLIC_API_BASE_URL=http://192.168.0.100:8081`
-- Start Expo: `npx expo start --clear` (or `npm run start`).
-- Open the app in Expo Go on your phone.
+This project used LLM assistance for:
+- boilerplate acceleration
+- prompt tuning for structured AI output
+- debugging tricky edge cases (especially date boundaries)
 
-**Important for phone + backend connection:**
-
-- `localhost` works only on your laptop, not on a physical phone.
-- Backend must listen on network interface (`server.address=0.0.0.0`, `server.port=8081`).
-- Phone and laptop must be on the same Wi-Fi network.
-- Allow inbound connections on port `8081` in Windows Firewall.
-
-**Voice check-in:** Allow **microphone** access in the browser when prompted. A valid Gemini key is required for voice analysis to succeed.
+One important issue solved was week-range filtering with `LocalDateTime`:  
+the end date at `00:00:00` excluded entries later in the same day.  
+The fix was to use an inclusive end-of-day strategy so weekly reflection data is complete.
