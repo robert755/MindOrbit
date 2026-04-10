@@ -4,12 +4,17 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.List;
 
 @RestController
 @RequestMapping("/checkins")
 public class CheckInController {
+    private static final Set<String> SUPPORTED_AUDIO_TYPES = Set.of(
+            "audio/webm", "audio/mp4", "audio/mpeg", "audio/wav", "audio/x-wav", "audio/m4a", "audio/aac"
+    );
 
     @Autowired
     private CheckInService checkInService;
@@ -30,14 +35,32 @@ public class CheckInController {
             @RequestParam(value = "activity", required = false) String activity
     ) {
         try {
+            if (audioFile == null || audioFile.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Audio file is required.");
+            }
+
             byte[] audioData = audioFile.getBytes();
             String mimeType = audioFile.getContentType();
             if (mimeType == null || mimeType.isBlank()) {
                 mimeType = "audio/webm";
             }
+
+            if (!SUPPORTED_AUDIO_TYPES.contains(mimeType.toLowerCase())) {
+                throw new ResponseStatusException(
+                        HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+                        "Unsupported audio format. Use webm/mp4/mpeg/wav/m4a/aac."
+                );
+            }
+
             return checkInService.createVoiceCheckIn(audioData, mimeType, userId, date, activity);
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to process voice check-in: " + e.getMessage(), e);
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Failed to process voice check-in.",
+                    e
+            );
         }
     }
 

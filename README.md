@@ -62,4 +62,21 @@ A specific challenge occurred when querying check-ins for the current week (e.g.
 - Navigate to the `frontend` folder.
 - Run `npm install` and `npm run dev`.
 
+**Mobile (Expo / React Native):**
+
+- Navigate to the `mindorbit-mobile` folder.
+- Run `npm install`.
+- Create/update `mindorbit-mobile/.env`:
+  - `EXPO_PUBLIC_API_BASE_URL=http://<YOUR_LAPTOP_IP>:8081`
+  - Example: `EXPO_PUBLIC_API_BASE_URL=http://192.168.0.100:8081`
+- Start Expo: `npx expo start --clear` (or `npm run start`).
+- Open the app in Expo Go on your phone.
+
+**Important for phone + backend connection:**
+
+- `localhost` works only on your laptop, not on a physical phone.
+- Backend must listen on network interface (`server.address=0.0.0.0`, `server.port=8081`).
+- Phone and laptop must be on the same Wi-Fi network.
+- Allow inbound connections on port `8081` in Windows Firewall.
+
 **Voice check-in:** Allow **microphone** access in the browser when prompted. A valid Gemini key is required for voice analysis to succeed.
